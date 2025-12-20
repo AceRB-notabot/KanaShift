@@ -1,0 +1,167 @@
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  padding: 18px;
+  max-width: 980px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 14px;
+  flex-wrap: wrap;
+}
+
+.tabbtn {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid #bbb;
+  background: #e9e9e9;
+  color: #222;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tabbtn:hover {
+  background: #ddd;
+}
+
+.tabbtn.active {
+  border-color: #222;
+  background: #111;
+  color: #fff;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.box {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.field {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+input, textarea, select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+button {
+  padding: 10px 14px;
+  border: 1px solid #222;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.note {
+  font-size: 12px;
+  opacity: 0.78;
+  margin-top: 10px;
+}
+
+.ok {
+  color: #0a7;
+  font-weight: 650;
+}
+
+.bad {
+  color: #c33;
+  font-weight: 650;
+}
+
+code {
+  background: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 7px;
+}
+
+ul {
+  margin: 8px 0 8px 20px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #fff;
+}
+
+.small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 14px 0;
+}
+
+.h2 {
+  margin: 0 0 8px;
+}
+
+.h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.p0 {
+  margin: 0;
+}

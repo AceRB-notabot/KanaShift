@@ -1,0 +1,919 @@
+<!doctype html>
+<!-- KanaShift v1.0 demo - ROT500K family - github.com/syhunt/kanashift -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KanaShift — Local Demo (Case-preserving skin + KT verified)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>KanaShift — Offline Demo</h1>
+
+<p>
+  <strong>KanaShift (a ROT500K mod)</strong> is a keyed, format-preserving obfuscation scheme that applies
+  polyalphabetic, class-preserving rotations driven by a PBKDF2-derived keystream.
+  The default configuration uses <strong>500,000 PBKDF2 iterations</strong> (hence “500K”).
+</p>
+
+<p>This demo contains <strong>two families</strong>:</p>
+<ul>
+  <li>
+    <strong>“Japanese-looking skin” family</strong> (Latin/PT → kana render):
+    letters become <strong>hiragana/katakana-heavy</strong> and punctuation can be translated to <strong>JP fullwidth</strong>,
+    while separators (<code>space</code>, <code>-</code>, <code>'</code>) stay fixed.
+    <strong>Uppercase is preserved</strong> by mapping ASCII uppercase into katakana sets.
+  </li>
+  <li>
+    <strong>JP-native family</strong> (JP → JP):
+    Japanese stays Japanese — <strong>hiragana rotates within hiragana</strong>,
+    <strong>katakana within katakana</strong>, and <strong>kanji stays kanji-like</strong> (rotated inside the CJK block).
+    <strong>ASCII English segments are also obfuscated</strong> (A–Z / a–z / 0–9),
+    so mixed JP+EN text remains uniformly “scrambled”.
+  </li>
+</ul>
+
+<p class="small" style="opacity:.9">
+  Simplified build keeps only: <strong>Base (no verification)</strong> and <strong>KT (token verification)</strong>.
+  Base modes do not show a strict “self-check OK/FAILED” (no verification signal).
+</p>
+
+<div class="tabs">
+  <button class="tabbtn active" data-tab="demo">Demo</button>
+  <button class="tabbtn" data-tab="about">About</button>
+</div>
+
+<div id="demo" class="panel active">
+  <div class="box">
+    <div class="row">
+      <div class="field">
+        <label for="mode">Mode</label>
+        <select id="mode">
+          <!-- Japanese-looking skin family (Latin/PT -> kana render) -->
+          <option value="KAN500K" selected>KAN500K — base “JP-looking skin” (no verification)</option>
+          <option value="KAN500KT">KAN500KT — token-verified (adds chars per token)</option>
+
+          <!-- JP-native family (JP -> JP) -->
+          <option value="KAN500KJP">KAN500KJP — JP-native base (no verification)</option>
+          <option value="KAN500KJPT">KAN500KJPT — JP-native token-verified</option>
+        </select>
+        <div class="small">
+          <span class="pill">KAN500K</span> Latin→kana skin (case-preserving via katakana for uppercase).
+          <span class="pill">KAN500KJP</span> JP→JP (hiragana/katakana/kanji preserved, ASCII shifted too).
+          <span class="pill">KT</span> token verification (decode returns OK/FAILED).
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="checkChars">Token check chars (KT)</label>
+        <input id="checkChars" type="number" value="1" min="1" step="1" />
+        <div class="small">Higher = lower chance of “false OK” with wrong password.</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="shiftPunct">Punctuation hide (optional)</label>
+        <label class="small" style="display:flex;gap:10px;align-items:center;">
+          <input id="shiftPunct" type="checkbox" checked />
+          Reversible keyed shifting of JP punctuation glyphs (does not move punctuation positions).
+        </label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field" style="flex: 1 1 100%;">
+        <label for="name">Input (plaintext or obfuscated)</label>
+        <textarea id="name" rows="4">Testing KanaShift with mixed English content. 完了。</textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" value="correct horse battery staple" />
+      </div>
+      <div class="field">
+        <label for="iterations">PBKDF2 iterations</label>
+        <input id="iterations" type="number" value="500000" min="1" step="1000" />
+      </div>
+      <div class="field">
+        <label for="salt">Salt</label>
+        <input id="salt" value="NameFPE:v1" />
+      </div>
+    </div>
+
+    <div class="btns">
+      <button id="btnEnc">Encode</button>
+      <button id="btnDec">Decode</button>
+      <button id="btnSwap">Swap ↔</button>
+    </div>
+
+    <div class="field">
+      <label for="out">Output</label>
+      <textarea id="out" readonly rows="4"></textarea>
+    </div>
+
+    <div class="note" id="status">
+      Tip: Encode writes to Output. Decode reads from Input. KT modes can verify wrong parameters.
+    </div>
+  </div>
+</div>
+
+<div id="about" class="panel">
+  <div class="box">
+    <h2 class="h2">About the KAN500K Families</h2>
+
+    <p>
+      <strong>KAN500K</strong> is the base scheme: it preserves separators
+      (<code>space</code>, <code>-</code>, <code>'</code>) and character classes, and is reversible with the same
+      <em>password + salt + iterations</em>.
+      In this build, the “skin” variant is <strong>case-preserving</strong> by mapping ASCII uppercase into
+      katakana sets.
+    </p>
+
+    <p>
+      <strong>KAN500KJP</strong> is the <strong>JP-native</strong> family: it obfuscates Japanese text into Japanese,
+      preserving script class and shifting embedded ASCII A–Z / a–z / 0–9 so mixed-language sentences
+      don’t leave obvious “plaintext islands”.
+    </p>
+
+    <p>
+      <strong>KT (token verification)</strong> appends 1+ check characters per token and allows decoding to return
+      a definitive <em>true/false</em> result.
+    </p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const te = new TextEncoder();
+
+  // -----------------------------
+  // Core helpers
+  // -----------------------------
+  function isSeparator(ch) { return ch === " " || ch === "-" || ch === "'"; }
+
+  function isDigit(ch) { return ch >= "0" && ch <= "9"; }
+  function isFullWidthDigit(ch) { return ch >= "０" && ch <= "９"; }
+
+  function isAsciiUpper(ch) { return ch >= "A" && ch <= "Z"; }
+  function isAsciiLower(ch) { return ch >= "a" && ch <= "z"; }
+  function toLowerASCII(ch) { return isAsciiUpper(ch) ? String.fromCharCode(ch.charCodeAt(0) | 0x20) : ch; }
+
+  function effectiveShift(shift, setSize) {
+    if (setSize <= 1) return 0;
+    let m = shift % setSize;
+    if (m === 0) m = (shift >= 0) ? 1 : -1; // never allow 0-rotation
+    return m;
+  }
+  
+function rotateInSetAllowZero(setChars, ch, shift) {
+  const n = setChars.length;
+  const idx = setChars.indexOf(ch);
+  if (idx < 0) return ch;
+  let m = shift % n;
+  let j = (idx + m) % n;
+  if (j < 0) j += n;
+  return setChars.charAt(j);
+}
+
+  function rotateInSetNoZero(setChars, ch, shift) {
+    const n = setChars.length;
+    const idx = setChars.indexOf(ch);
+    if (idx < 0) return ch;
+
+    const eff = effectiveShift(shift, n);
+    const j = (idx + eff) % n;
+    const jj = (j + n) % n;
+    return setChars.charAt(jj);
+  }
+
+  async function deriveKeyStream(password, salt, iterations, needBytes) {
+    if (needBytes < 32) needBytes = 32;
+    const pwBytes = te.encode(password);
+    const saltBytes = te.encode(salt);
+
+    const baseKey = await crypto.subtle.importKey("raw", pwBytes, "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", hash: "SHA-256", salt: saltBytes, iterations: iterations },
+      baseKey,
+      needBytes * 8
+    );
+    return new Uint8Array(bits);
+  }
+
+  // -----------------------------
+  // Punctuation "translation" (ASCII <-> JP fullwidth)
+  // reversible, position-preserving
+  // (we do NOT translate '-' or "'" to keep separator semantics intact)
+  // -----------------------------
+  const PUNCT_ENC_MAP = new Map([
+    ["?", "？"],
+    ["!", "！"],
+    [",", "、"],
+    [".", "。"],
+    [":", "："],
+    [";", "；"],
+    ["(", "（"],
+    [")", "）"],
+    ["[", "［"],
+    ["]", "］"],
+    ["{", "｛"],
+    ["}", "｝"],
+    ['"', "＂"],
+  ]);
+  const PUNCT_DEC_MAP = new Map([...PUNCT_ENC_MAP.entries()].map(([a, b]) => [b, a]));
+
+  function punctTranslate(s, dir /* +1 enc, -1 dec */) {
+    if (!s) return s;
+    const map = (dir > 0) ? PUNCT_ENC_MAP : PUNCT_DEC_MAP;
+
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charAt(i);
+      out += map.get(c) ?? c;
+    }
+    return out;
+  }
+
+  // -----------------------------
+  // Optional keyed punctuation shifting (JP glyph sets)
+  // -----------------------------
+  const P_END  = "！？";
+  const P_MID  = "、。・";
+
+  function isShiftPunct(ch) {
+    return P_END.includes(ch) || P_MID.includes(ch);
+  }
+
+  async function punctShiftApply(s, password, iterations, salt, direction) {
+    if (!s) return s;
+
+    let need = 0;
+    for (let i = 0; i < s.length; i++) if (isShiftPunct(s.charAt(i))) need++;
+    if (need === 0) return s;
+
+    const punctSalt = salt + "|PunctShiftJP:v2";
+    const ks = await deriveKeyStream(password, punctSalt, iterations, need + 64);
+    let kpos = 0;
+
+    let out = s.split("");
+    for (let i = 0; i < out.length; i++) {
+      const c = out[i];
+      if (!isShiftPunct(c)) continue;
+
+      const shift = (ks[kpos] | 0) * direction;
+      kpos++; if (kpos >= ks.length) kpos = 0;
+
+      if (P_END.includes(c)) out[i] = rotateInSetNoZero(P_END, c, shift);
+      else out[i] = rotateInSetNoZero(P_MID, c, shift);
+    }
+
+    return out.join("");
+  }
+
+  // ============================================================
+  // FAMILY A: “Japanese-looking skin” (Latin/PT -> kana render)
+  // Case-preserving: lowercase -> hiragana, uppercase -> katakana
+  // ============================================================
+
+  async function transformNameNameLikeFPE(s, password, iterations, salt, direction) {
+    // Plain (ASCII)
+    const P_VOW_LO = "aeiou";
+    const P_VOW_UP = "AEIOU";
+
+    const P_CON_LO = "bcdfghjklmnpqrstvwxyz";
+    const P_CON_UP = "BCDFGHJKLMNPQRSTVWXYZ";
+
+    // Portuguese vowels (accented)
+    const P_VOW_LO_PT = "áàâãäéèêëíìîïóòôõöúùûü";
+    const P_VOW_UP_PT = "ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜ";
+
+    // Portuguese cedilla
+    const C_CED_LO = "ゞ"; // for 'ç'
+    const C_CED_UP = "ヾ"; // for 'Ç'
+
+    // Cipher sets (lowercase -> hiragana)
+    const C_VOW_LO = "あいうえお"; // 5
+    const C_CON_LO = "さしすせそたちつてとなにぬねのはひふへほま"; // 21
+
+    // Cipher sets (uppercase -> katakana) sizes must match
+    const C_VOW_UP = "アイウエオ"; // 5
+    const C_CON_UP = "サシスセソタチツテトナニヌネノハヒフヘホマ"; // 21
+
+    // Accented vowels (must match lengths: 24)
+    const C_ACC_LO = "かきくけこみむめもやゆよらりるれろわをんゐゑゔゝ"; // 24
+    const C_ACC_UP = "カキクケコミムメモヤユヨラリルレロワヲンヰヱヴヽ"; // 24
+
+    if (!s) return s;
+
+    const ks = await deriveKeyStream(password, salt, iterations, s.length + 64);
+    let kpos = 0;
+
+    function mapRotate(plainSet, cipherSet, ch, shift, dir) {
+      const n = plainSet.length;
+      if (n <= 1) return null;
+
+      const idx = (dir > 0) ? plainSet.indexOf(ch) : cipherSet.indexOf(ch);
+      if (idx < 0) return null;
+
+      const j = (idx + (shift % n)) % n;
+      const jj = (j + n) % n;
+
+      return (dir > 0) ? cipherSet.charAt(jj) : plainSet.charAt(jj);
+    }
+
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charAt(i);
+
+      if (isSeparator(c)) { out += c; continue; }
+
+      // +1 ensures shift is never 0, and remains perfectly invertible (decrypt uses negative)
+      const shift = ((ks[kpos] | 0) + 1) * direction;
+      kpos++; if (kpos >= ks.length) kpos = 0;
+
+      // Digits: encrypt => fullwidth, decrypt => ASCII
+      if (direction > 0) {
+        if (isDigit(c)) {
+const d = c.charCodeAt(0) - 48;
+const nd = (d + (shift % 10) + 10) % 10;
+out += String.fromCharCode("０".charCodeAt(0) + nd);
+continue;
+        }
+      } else {
+        if (isDigit(c) || isFullWidthDigit(c)) {
+const d = isDigit(c) ? (c.charCodeAt(0) - 48) : (c.charCodeAt(0) - "０".charCodeAt(0));
+const nd = (d + (shift % 10) + 10) % 10;
+out += String.fromCharCode(48 + nd);
+continue;
+        }
+      }
+
+      if (direction > 0) {
+        // ASCII lowercase -> hiragana
+        if (P_VOW_LO.includes(c)) { out += mapRotate(P_VOW_LO, C_VOW_LO, c, shift, +1) ?? c; continue; }
+        if (P_CON_LO.includes(c)) { out += mapRotate(P_CON_LO, C_CON_LO, c, shift, +1) ?? c; continue; }
+
+        // ASCII uppercase -> katakana (preserves case)
+        if (P_VOW_UP.includes(c)) { out += mapRotate(P_VOW_UP, C_VOW_UP, c, shift, +1) ?? c; continue; }
+        if (P_CON_UP.includes(c)) { out += mapRotate(P_CON_UP, C_CON_UP, c, shift, +1) ?? c; continue; }
+
+        // Accented vowels
+        if (P_VOW_LO_PT.includes(c)) { out += mapRotate(P_VOW_LO_PT, C_ACC_LO, c, shift, +1) ?? c; continue; }
+        if (P_VOW_UP_PT.includes(c)) { out += mapRotate(P_VOW_UP_PT, C_ACC_UP, c, shift, +1) ?? c; continue; }
+
+        // Cedilla
+        if (c === "ç") { out += C_CED_LO; continue; }
+        if (c === "Ç") { out += C_CED_UP; continue; }
+
+        out += c;
+      } else {
+        // Hiragana -> ASCII lowercase
+        if (C_VOW_LO.includes(c)) { out += mapRotate(P_VOW_LO, C_VOW_LO, c, shift, -1) ?? c; continue; }
+        if (C_CON_LO.includes(c)) { out += mapRotate(P_CON_LO, C_CON_LO, c, shift, -1) ?? c; continue; }
+
+        // Katakana -> ASCII uppercase
+        if (C_VOW_UP.includes(c)) { out += mapRotate(P_VOW_UP, C_VOW_UP, c, shift, -1) ?? c; continue; }
+        if (C_CON_UP.includes(c)) { out += mapRotate(P_CON_UP, C_CON_UP, c, shift, -1) ?? c; continue; }
+
+        // Accented vowels
+        if (C_ACC_LO.includes(c)) { out += mapRotate(P_VOW_LO_PT, C_ACC_LO, c, shift, -1) ?? c; continue; }
+        if (C_ACC_UP.includes(c)) { out += mapRotate(P_VOW_UP_PT, C_ACC_UP, c, shift, -1) ?? c; continue; }
+
+        // Cedilla
+        if (c === C_CED_LO) { out += "ç"; continue; }
+        if (c === C_CED_UP) { out += "Ç"; continue; }
+
+        out += c;
+      }
+    }
+
+    return out;
+  }
+
+  async function KAN500K_Encrypt(name, password, iterations = 500000, salt = "NameFPE:v1", shiftPunctuation = true) {
+    let r = await transformNameNameLikeFPE(name, password, iterations, salt, +1);
+    r = punctTranslate(r, +1);
+    if (shiftPunctuation) r = await punctShiftApply(r, password, iterations, salt, +1);
+    return r;
+  }
+
+  async function KAN500K_Decrypt(obfuscated, password, iterations = 500000, salt = "NameFPE:v1", shiftPunctuation = true) {
+    let s = obfuscated;
+    if (shiftPunctuation) s = await punctShiftApply(s, password, iterations, salt, -1);
+    s = punctTranslate(s, -1);
+    return transformNameNameLikeFPE(s, password, iterations, salt, -1);
+  }
+
+  // ============================================================
+  // FAMILY B: JP-native (JP -> JP) + ASCII shifting for embedded EN
+  // ============================================================
+
+  function isKanji(ch) {
+    const cp = ch.codePointAt(0);
+    return cp >= 0x4E00 && cp <= 0x9FFF;
+  }
+
+  function rotateCodepointRangeNoZero(ch, shift, lo, hi) {
+    const cp = ch.codePointAt(0);
+    if (cp < lo || cp > hi) return ch;
+
+    const n = (hi - lo + 1);
+    const eff = effectiveShift(shift, n);
+    const idx = cp - lo;
+    const j = (idx + eff) % n;
+    const jj = (j + n) % n;
+    return String.fromCodePoint(lo + jj);
+  }
+
+  function buildKanaSet(fromCP, toCP, opts = {}) {
+    const { excludeSmall = false } = opts;
+
+    const SMALL = new Set([
+      0x3041,0x3043,0x3045,0x3047,0x3049,0x3063,0x3083,0x3085,0x3087,0x308E,
+      0x30A1,0x30A3,0x30A5,0x30A7,0x30A9,0x30C3,0x30E3,0x30E5,0x30E7,0x30EE,
+      0x3095,0x3096,0x30F5,0x30F6
+    ]);
+
+    let out = "";
+    for (let cp = fromCP; cp <= toCP; cp++) {
+      if (excludeSmall && SMALL.has(cp)) continue;
+      out += String.fromCodePoint(cp);
+    }
+    return out;
+  }
+
+  const JP_HIRA = buildKanaSet(0x3041, 0x3096, { excludeSmall: false });
+  const JP_KATA = buildKanaSet(0x30A1, 0x30FA, { excludeSmall: false });
+
+  function isHiragana(ch) {
+    const cp = ch.codePointAt(0);
+    return cp >= 0x3041 && cp <= 0x3096;
+  }
+  function isKatakana(ch) {
+    const cp = ch.codePointAt(0);
+    return cp >= 0x30A1 && cp <= 0x30FA;
+  }
+
+  function isStableJpMark(ch) {
+    return (
+      ch === "ー" || ch === "々" ||
+      ch === "ゝ" || ch === "ゞ" ||
+      ch === "ヽ" || ch === "ヾ"
+    );
+  }
+
+// --- PhonoShift-style ASCII for JP-native ---
+// Keeps pronounceability: vowels stay vowels, consonants stay consonants, case preserved.
+function rotateInSetAllowZero(setChars, ch, shift) {
+  const n = setChars.length;
+  const idx = setChars.indexOf(ch);
+  if (idx < 0) return ch;
+  let m = shift % n;               // can be negative, can be 0
+  let j = (idx + m) % n;
+  if (j < 0) j += n;
+  return setChars.charAt(j);
+}
+
+function rotateAsciiAlphaPhono(ch, shift) {
+  const V = "aeiou";
+  const C = "bcdfghjklmnpqrstvwxyz";
+
+  if (isAsciiUpper(ch)) {
+    const low = String.fromCharCode(ch.charCodeAt(0) | 0x20);
+    if (V.includes(low)) return rotateInSetAllowZero(V, low, shift).toUpperCase();
+    if (C.includes(low)) return rotateInSetAllowZero(C, low, shift).toUpperCase();
+    return ch;
+  }
+
+  if (isAsciiLower(ch)) {
+    if (V.includes(ch)) return rotateInSetAllowZero(V, ch, shift);
+    if (C.includes(ch)) return rotateInSetAllowZero(C, ch, shift);
+    return ch;
+  }
+
+  return ch;
+}
+
+  async function transformJPNativeFPE(s, password, iterations, salt, direction) {
+    if (!s) return s;
+
+    const ks = await deriveKeyStream(password, salt + "|JPNative:v2|AsciiShift", iterations, s.length + 64);
+    let kpos = 0;
+
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charAt(i);
+
+      if (isSeparator(c)) { out += c; continue; }
+      if (isStableJpMark(c)) { out += c; continue; }
+
+      const shift = (ks[kpos] | 0) * direction;
+      kpos++; if (kpos >= ks.length) kpos = 0;
+
+// ASCII letters: PhonoShift-style (vowels within vowels, consonants within consonants)
+if (isAsciiUpper(c) || isAsciiLower(c)) {
+  out += rotateAsciiAlphaPhono(c, shift);
+  continue;
+}
+
+      if (direction > 0) {
+        if (isDigit(c)) {
+          const d = c.charCodeAt(0) - 48;
+          const eff = effectiveShift(shift, 10);
+          const nd = (d + eff + 10) % 10;
+          out += String.fromCharCode("０".charCodeAt(0) + nd);
+          continue;
+        }
+        if (isFullWidthDigit(c)) {
+          const d = c.charCodeAt(0) - "０".charCodeAt(0);
+          const eff = effectiveShift(shift, 10);
+          const nd = (d + eff + 10) % 10;
+          out += String.fromCharCode("０".charCodeAt(0) + nd);
+          continue;
+        }
+      } else {
+        if (isDigit(c) || isFullWidthDigit(c)) {
+          const d = isDigit(c) ? (c.charCodeAt(0) - 48) : (c.charCodeAt(0) - "０".charCodeAt(0));
+          const eff = effectiveShift(shift, 10);
+          const nd = (d + eff + 10) % 10;
+          out += String.fromCharCode(48 + nd);
+          continue;
+        }
+      }
+
+      if (isHiragana(c)) { out += rotateInSetNoZero(JP_HIRA, c, shift); continue; }
+      if (isKatakana(c)) { out += rotateInSetNoZero(JP_KATA, c, shift); continue; }
+      if (isKanji(c))    { out += rotateCodepointRangeNoZero(c, shift, 0x4E00, 0x9FFF); continue; }
+
+      out += c;
+    }
+
+    return out;
+  }
+
+  async function KAN500KJP_Encrypt(text, password, iterations = 500000, salt = "NameFPE:v1", shiftPunctuation = true) {
+    let r = await transformJPNativeFPE(text, password, iterations, salt, +1);
+    r = punctTranslate(r, +1);
+    if (shiftPunctuation) r = await punctShiftApply(r, password, iterations, salt, +1);
+    return r;
+  }
+
+  async function KAN500KJP_Decrypt(obfuscated, password, iterations = 500000, salt = "NameFPE:v1", shiftPunctuation = true) {
+    let s = obfuscated;
+    if (shiftPunctuation) s = await punctShiftApply(s, password, iterations, salt, -1);
+    s = punctTranslate(s, -1);
+    return transformJPNativeFPE(s, password, iterations, salt, -1);
+  }
+
+  // ============================================================
+  // KT Token Verification (shared)
+  // ============================================================
+
+  async function hmacSha256Bytes(keyStr, msgStr) {
+    const keyBytes = te.encode(keyStr);
+    const msgBytes = te.encode(msgStr);
+    const key = await crypto.subtle.importKey("raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const sig = await crypto.subtle.sign("HMAC", key, msgBytes);
+    return new Uint8Array(sig);
+  }
+
+  function isTokenSep(ch) {
+    return (
+      ch === " " || ch === "　" || ch === "-" || ch === "'" ||
+      ch === "." || ch === "," || ch === "!" || ch === "?" ||
+      ch === ":" || ch === ";" ||
+      ch === "。" || ch === "、" || ch === "！" || ch === "？" ||
+      ch === "：" || ch === "；" || ch === "・" ||
+      ch === "「" || ch === "」" || ch === "『" || ch === "』" ||
+      ch === "（" || ch === "）" || ch === "［" || ch === "］" ||
+      ch === "｛" || ch === "｝" ||
+      ch === "\t" || ch === "\n" || ch === "\r"
+    );
+  }
+
+  function isAllDigitsStrAnyWidth(s) {
+    if (!s) return false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charAt(i);
+      if (!(isDigit(c) || isFullWidthDigit(c))) return false;
+    }
+    return true;
+  }
+
+  async function tokenDigest(password, salt, iterations, tokenIndex, tokenPlain, domain) {
+    const msg = `${domain}|${salt}|${iterations}|${tokenIndex}|${tokenPlain}`;
+    return hmacSha256Bytes(password, msg);
+  }
+
+  function makeTokenCheck(kind, macBytes, checkCharsPerToken) {
+    const n = Math.max(1, checkCharsPerToken | 0);
+    const KANA_CHK = "さしすせそたちつてとなにぬねのはひふへほま";
+
+    let out = "";
+    for (let i = 0; i < n; i++) {
+      const b = macBytes[(i * 7) & 31];
+      if (kind === "digits") out += String.fromCharCode("０".charCodeAt(0) + (b % 10));
+      else out += KANA_CHK.charAt(b % KANA_CHK.length);
+    }
+    return out;
+  }
+
+  // Token normalization for skin family:
+  // With case-preserving skin, we don't need to lowercase tokens anymore.
+  function normToken_Skin(tok) { return tok; }
+  function normToken_Identity(tok) { return tok; }
+
+  async function buildPlainTokenChecks(plain, password, salt, iterations, checkCharsPerToken, domain, normFn) {
+    const checks = [];
+    let tok = "";
+    let tokIdx = 0;
+
+    for (let i = 0; i < plain.length; i++) {
+      const c = plain.charAt(i);
+      if (isTokenSep(c)) {
+        if (tok) {
+          const kind = isAllDigitsStrAnyWidth(tok) ? "digits" : "alpha";
+          const tnorm = normFn ? normFn(tok) : tok;
+          const mac = await tokenDigest(password, salt, iterations, tokIdx, tnorm, domain);
+          checks.push(makeTokenCheck(kind, mac, checkCharsPerToken));
+          tokIdx++;
+          tok = "";
+        }
+      } else {
+        tok += c;
+      }
+    }
+
+    if (tok) {
+      const kind = isAllDigitsStrAnyWidth(tok) ? "digits" : "alpha";
+      const tnorm = normFn ? normFn(tok) : tok;
+      const mac = await tokenDigest(password, salt, iterations, tokIdx, tnorm, domain);
+      checks.push(makeTokenCheck(kind, mac, checkCharsPerToken));
+    }
+
+    return checks;
+  }
+
+  function attachChecksToCipher(cipher, checks) {
+    let out = "";
+    let tok = "";
+    let tokIdx = 0;
+
+    for (let i = 0; i < cipher.length; i++) {
+      const c = cipher.charAt(i);
+      if (isTokenSep(c)) {
+        if (tok) {
+          if (tokIdx >= checks.length) throw new Error("TokenTagged: token/check count mismatch.");
+          out += tok + checks[tokIdx];
+          tokIdx++;
+          tok = "";
+        }
+        out += c;
+      } else {
+        tok += c;
+      }
+    }
+
+    if (tok) {
+      if (tokIdx >= checks.length) throw new Error("TokenTagged: token/check count mismatch.");
+      out += tok + checks[tokIdx];
+      tokIdx++;
+    }
+
+    if (tokIdx !== checks.length) throw new Error("TokenTagged: unused checks remain.");
+    return out;
+  }
+
+  function stripChecksFromTagged(tagged, checkCharsPerToken) {
+    const n = Math.max(1, checkCharsPerToken | 0);
+
+    let baseCipher = "";
+    const givenChecks = [];
+
+    let tok = "";
+    for (let i = 0; i < tagged.length; i++) {
+      const c = tagged.charAt(i);
+      if (isTokenSep(c)) {
+        if (tok) {
+          if (tok.length <= n) return null;
+          const chk = tok.slice(-n);
+          const baseTok = tok.slice(0, -n);
+          givenChecks.push(chk);
+          baseCipher += baseTok;
+          tok = "";
+        }
+        baseCipher += c;
+      } else {
+        tok += c;
+      }
+    }
+
+    if (tok) {
+      if (tok.length <= n) return null;
+      const chk = tok.slice(-n);
+      const baseTok = tok.slice(0, -n);
+      givenChecks.push(chk);
+      baseCipher += baseTok;
+    }
+
+    return { baseCipher, givenChecks };
+  }
+
+  const TOK_DOMAIN_SKIN = "KanaShiftTok:v2";
+  const TOK_DOMAIN_JP   = "KanaShiftTokJP:v2";
+
+  async function Family_TokenTagged_Encrypt(
+    plain, password, iterations, salt, checkCharsPerToken, shiftPunctuation,
+    coreTransformFn, tokDomain, normFn
+  ) {
+    const cipher = await coreTransformFn(plain, password, iterations, salt, +1);
+    const checks = await buildPlainTokenChecks(plain, password, salt, iterations, checkCharsPerToken, tokDomain, normFn);
+
+    let out = attachChecksToCipher(cipher, checks);
+
+    out = punctTranslate(out, +1);
+    if (shiftPunctuation) out = await punctShiftApply(out, password, iterations, salt, +1);
+    return out;
+  }
+
+  async function Family_TokenTagged_Decrypt(
+    tagged, password, iterations, salt, checkCharsPerToken, shiftPunctuation,
+    coreTransformFn, tokDomain, normFn
+  ) {
+    let s = tagged;
+
+    if (shiftPunctuation) s = await punctShiftApply(s, password, iterations, salt, -1);
+    s = punctTranslate(s, -1);
+
+    const stripped = stripChecksFromTagged(s, checkCharsPerToken);
+    if (!stripped) return { ok: false, value: "" };
+
+    const plain = await coreTransformFn(stripped.baseCipher, password, iterations, salt, -1);
+    const expected = await buildPlainTokenChecks(plain, password, salt, iterations, checkCharsPerToken, tokDomain, normFn);
+
+    if (expected.length !== stripped.givenChecks.length) return { ok: false, value: "" };
+    for (let i = 0; i < expected.length; i++) {
+      if (expected[i] !== stripped.givenChecks[i]) return { ok: false, value: "" };
+    }
+
+    return { ok: true, value: plain };
+  }
+
+  // -----------------------------
+  // KT wrappers (skin)
+  // -----------------------------
+  async function KAN500K_TokenTagged(name, password, iterations = 500000, salt = "NameFPE:v1", checkCharsPerToken = 1, shiftPunctuation = true) {
+    return Family_TokenTagged_Encrypt(name, password, iterations, salt, checkCharsPerToken, shiftPunctuation, transformNameNameLikeFPE, TOK_DOMAIN_SKIN, normToken_Skin);
+  }
+  async function KAN500K_TokenTaggedDecrypt(tagged, password, iterations = 500000, salt = "NameFPE:v1", checkCharsPerToken = 1, shiftPunctuation = true) {
+    return Family_TokenTagged_Decrypt(tagged, password, iterations, salt, checkCharsPerToken, shiftPunctuation, transformNameNameLikeFPE, TOK_DOMAIN_SKIN, normToken_Skin);
+  }
+
+  // -----------------------------
+  // KT wrappers (JP-native)
+  // -----------------------------
+  async function KAN500KJP_TokenTagged(name, password, iterations = 500000, salt = "NameFPE:v1", checkCharsPerToken = 1, shiftPunctuation = true) {
+    return Family_TokenTagged_Encrypt(name, password, iterations, salt, checkCharsPerToken, shiftPunctuation, transformJPNativeFPE, TOK_DOMAIN_JP, normToken_Identity);
+  }
+  async function KAN500KJP_TokenTaggedDecrypt(tagged, password, iterations = 500000, salt = "NameFPE:v1", checkCharsPerToken = 1, shiftPunctuation = true) {
+    return Family_TokenTagged_Decrypt(tagged, password, iterations, salt, checkCharsPerToken, shiftPunctuation, transformJPNativeFPE, TOK_DOMAIN_JP, normToken_Identity);
+  }
+
+  // ============================================================
+  // UI wiring
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+  const btnEnc = $("btnEnc");
+  const btnDec = $("btnDec");
+  const btnSwap = $("btnSwap");
+  const statusEl = $("status");
+
+  function setBusy(b) {
+    btnEnc.disabled = b;
+    btnDec.disabled = b;
+    btnSwap.disabled = b;
+  }
+
+  function status(msg, ok = null) {
+    if (ok === true) statusEl.innerHTML = `<span class="ok">${msg}</span>`;
+    else if (ok === false) statusEl.innerHTML = `<span class="bad">${msg}</span>`;
+    else statusEl.textContent = msg;
+  }
+
+  function getParams() {
+    const mode = $("mode").value;
+    const name = $("name").value;
+    const pw = $("password").value;
+    const it = Math.max(1, parseInt($("iterations").value || "1", 10));
+    const salt = $("salt").value || "NameFPE:v1";
+    const cc = Math.max(1, parseInt($("checkChars").value || "1", 10));
+    const sp = $("shiftPunct").checked;
+    return { mode, name, pw, it, salt, cc, sp };
+  }
+
+  async function doEncode() {
+    const { mode, name, pw, it, salt, cc, sp } = getParams();
+
+    if (mode === "KAN500K")   return KAN500K_Encrypt(name, pw, it, salt, sp);
+    if (mode === "KAN500KT")  return KAN500K_TokenTagged(name, pw, it, salt, cc, sp);
+
+    if (mode === "KAN500KJP")  return KAN500KJP_Encrypt(name, pw, it, salt, sp);
+    if (mode === "KAN500KJPT") return KAN500KJP_TokenTagged(name, pw, it, salt, cc, sp);
+
+    throw new Error("Unknown mode: " + mode);
+  }
+
+  async function doDecode() {
+    const { mode, name, pw, it, salt, cc, sp } = getParams();
+
+    if (mode === "KAN500K") {
+      const dec = await KAN500K_Decrypt(name, pw, it, salt, sp);
+      return { ok: true, value: dec, verified: false };
+    }
+    if (mode === "KAN500KT") {
+      const r = await KAN500K_TokenTaggedDecrypt(name, pw, it, salt, cc, sp);
+      return { ok: r.ok, value: r.value, verified: true };
+    }
+
+    if (mode === "KAN500KJP") {
+      const dec = await KAN500KJP_Decrypt(name, pw, it, salt, sp);
+      return { ok: true, value: dec, verified: false };
+    }
+    if (mode === "KAN500KJPT") {
+      const r = await KAN500KJP_TokenTaggedDecrypt(name, pw, it, salt, cc, sp);
+      return { ok: r.ok, value: r.value, verified: true };
+    }
+
+    throw new Error("Unknown mode: " + mode);
+  }
+
+  btnEnc.addEventListener("click", async () => {
+    try {
+      setBusy(true);
+      status("Encoding… (PBKDF2/HMAC can take a moment)");
+      const t0 = performance.now();
+      const enc = await doEncode();
+      const t1 = performance.now();
+      $("out").value = enc;
+
+      const { mode } = getParams();
+
+      // Base modes have no verification signal; do not show strict self-check.
+      if (mode === "KAN500K" || mode === "KAN500KJP") {
+        status(`Done in ${Math.round(t1 - t0)} ms. (No verification in ${mode})`, true);
+      } else {
+        status(`Done in ${Math.round(t1 - t0)} ms.`, true);
+      }
+    } catch (e) {
+      console.error(e);
+      status("Error: " + (e && e.message ? e.message : String(e)), false);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDec.addEventListener("click", async () => {
+    try {
+      setBusy(true);
+      status("Decoding…");
+      const t0 = performance.now();
+      const r = await doDecode();
+      const t1 = performance.now();
+
+      $("out").value = r.value || "";
+
+      if (!r.verified) {
+        status(`Done in ${Math.round(t1 - t0)} ms. (No verification in ${$("mode").value})`, true);
+      } else {
+        status(`Done in ${Math.round(t1 - t0)} ms. Verified: ${r.ok ? "OK" : "FAILED"}`, r.ok);
+      }
+    } catch (e) {
+      console.error(e);
+      status("Error: " + (e && e.message ? e.message : String(e)), false);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnSwap.addEventListener("click", () => {
+    const a = $("name").value;
+    $("name").value = $("out").value;
+    $("out").value = a;
+    status("Swapped.");
+  });
+
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+})();
+</script>
+</body>
+</html>
