@@ -52,15 +52,17 @@ The salt value (e.g. `NameFPE:v1`) acts as a domain and version separator rather
 
 ---
 
-## Security Notes and Limitations
+### Security posture and Use cases
 
-KanaShift is not “weak obfuscation”, but also not “strong encryption”.
-It is cryptographically hardened obfuscation: it uses real crypto to make reversal expensive, while intentionally preserving text structure and usability.
+KanaShift is neither “weak obfuscation” nor “strong encryption”.
+It is best understood as **cryptographically hardened obfuscation**: it uses real cryptographic primitives to make reversal expensive, while intentionally preserving text structure and usability.
 
-With a strong 16-character password, guessing becomes extremely impractical, but the design does not provide the guarantees of modern authenticated encryption.
+With a strong 16-character password, guessing becomes extremely impractical, but the design does not provide the guarantees of modern authenticated encryption (AEAD) and is not intended as a drop-in replacement for it.
 
-As an open-source project, its strength comes from scrutiny rather than secrecy.
-Any weaknesses are expected to surface through review rather than obscurity.
+KanaShift is designed for reversible masking of human-readable text in UIs, logs, demos, and identifiers, where stable tokenization, copy/paste friendliness, and visually plausible output matter.
+The PBKDF2 500K setting increases the cost of password guessing, but does not turn the output into conventional ciphertext.
+
+As an open-source project, its strength comes from scrutiny rather than secrecy; any weaknesses are expected to surface through review rather than obscurity.
 
 ### Calibration
 
