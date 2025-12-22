@@ -1,3 +1,0 @@
-[workspace]
-members = ["phonoshift", "phonoshift_app"]
-resolver = "2"

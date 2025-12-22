@@ -6,7 +6,7 @@
 
 ## Overview
 
-KanaShift is a password-based text obfuscation scheme for Latin and Japanese text, preserving separators and tokens. It is part of the ROT500K family, together with its sibling PhonoShift, all available in this repository, and both are intentionally hardened using cryptographic primitives to make reversal without the password costly.
+KanaShift is a password-based text obfuscation scheme for Latin and Japanese text, preserving separators and tokens. Just like its sibling PhonoShift (ROT500K), also available in this repository, KanaShift is intentionally hardened using cryptographic primitives to make reversal without the password costly.
 
 Internally, ROT500K derives a keystream using PBKDF2 with 500,000 iterations (“500K”), making each password guess deliberately slow.
 Unlike ROT13, which can be reversed instantly by anyone, reversal here requires guessing the correct password.
@@ -16,9 +16,7 @@ this is not ROT13 repeated many times, but a keyed design where reversal without
 
 KanaShift applies the same mechanics with a different visual skin, rendering text using Japanese writing systems (kana and kanji) instead of Latin letters.
 
-Initial implementations of PhonoShift and KanaShift are available as a standalone HTML/JS, a Python port with Gradio, and a cross-platform Rust app, making the design easy to test and review across environments. The browser implementation in `src/` serves as the reference design; additional language ports are available under `ports/`.
-
-For the Rust implementation, performance measurements assume a release build, as debug builds can significantly slow down encoding and decoding.
+Initial implementations of PhonoShift and KanaShift are available as a standalone HTML/JS, a Python port with Gradio, and a cross-platform Rust app, making the design easy to test and review across environments. The browser implementation in `src/` serves as the reference design; the Python language port is available under `src-python/`.
 
 ## Live Demos
 
@@ -133,8 +131,10 @@ deployments (for example, cost factor 12), without claiming the same security pr
 ## Usage
 
 - **Browser:** open the HTML file in `src/` or use the hosted GitHub Pages link.
-- **Rust:** build with `cargo build -p kanashift_app --release` and run the binary from `target/release/`.
+- **Rust:** get it from https://github.com/DaragonTech/KanaShift-RS. Build with `cargo build -p kanashift_app --release` and run the binary from `target/release/`.
 - **Python:** install Gradio (`pip install gradio`) and run `python kanashift_app.py`.
+
+For the Rust implementation, performance measurements assume a release build, as debug builds can significantly slow down encoding and decoding.
 
 ### Quick Pick
 
