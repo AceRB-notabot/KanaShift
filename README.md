@@ -2,21 +2,28 @@
 
 # KanaShift & PhonoShift
 
-**Password-based text transformation that renders text with a Japanese visual skin. Looks Japanese, translates to something else, decodes back to the truth.**
+**Password-derived, format-preserving text transformation with a Japanese visual skin. Looks Japanese, translates to something else, decodes back to the truth.**
 
 ## Overview
 
-KanaShift is a password-based text obfuscation scheme for Latin and Japanese text, preserving separators and tokens. Just like its sibling PhonoShift (ROT500K), also available in this repository, KanaShift is intentionally hardened using cryptographic primitives to make reversal without the password costly.
+KanaShift is a password-based, reversible text transformation scheme for Latin and Japanese text that preserves length, spacing, punctuation, and token boundaries.  
+It can be understood as a **stream-based, password-derived variant of format-preserving encryption (FPE)**, optimized for structured text and short tokens rather than free-form natural language.
 
-Internally, ROT500K derives a keystream using PBKDF2 with 500,000 iterations (“500K”), making each password guess deliberately slow.
-Unlike ROT13, which can be reversed instantly by anyone, reversal here requires guessing the correct password.
+Like its sibling **PhonoShift (ROT500K)**, also included in this repository, KanaShift is intentionally hardened using cryptographic primitives to make reversal without the correct password computationally costly, while remaining deterministic and fully reversible with the secret.
 
-The name “ROT500K” is a deliberate nod to ROT13, partly as a joke and partly to underline the contrast:
-this is not ROT13 repeated many times, but a keyed design where reversal without the secret is no longer trivial.
+Internally, ROT500K derives a keystream using **PBKDF2-HMAC-SHA256 with 500,000 iterations** (“500K”), deliberately slowing each password-guess attempt. Unlike ROT13, which can be reversed instantly by anyone, reversal here requires guessing the correct password and paying the full key-derivation cost.
 
-KanaShift applies the same mechanics with a different visual skin, rendering text using Japanese writing systems (kana and kanji) instead of Latin letters.
+The name “ROT500K” is a deliberate nod to ROT13—partly as a joke and partly to underline the contrast:
+this is **not** ROT13 repeated many times, but a keyed design where reversal without the secret is no longer trivial.
 
-Initial implementations of PhonoShift and KanaShift are available as a standalone HTML/JS, a Python port with Gradio, and a cross-platform Rust app, making the design easy to test and review across environments. The browser implementation in `src/` serves as the reference design; the Python language port is available under `src-python/`.
+KanaShift applies the same mechanics with a different visual skin, rendering text using Japanese writing systems (kana and kanji) instead of Latin letters. The design works best for **access codes, identifiers, logs, UI strings, and other structured text**, and is not intended to provide semantic security for arbitrary free-form prose.
+
+Initial implementations of PhonoShift and KanaShift are provided as:
+- a standalone HTML/JavaScript reference implementation (`src/`)
+- a Python port with Gradio (`src-python/`)
+- a cross-platform Rust application
+
+The browser implementation serves as the reference design; other implementations aim to match it byte-for-byte.
 
 ## Live Demos
 
@@ -50,12 +57,17 @@ The salt value (e.g. `NameFPE:v1`) acts as a domain and version separator rather
 
 ---
 
+## What This Is (and Is Not)
+
+KanaShift is not a replacement for authenticated encryption (e.g., AES-GCM),
+nor does it aim to provide semantic security for natural language.
+
+It is designed for reversible masking of structured text where format preservation,
+visual disguise, and password-based recovery matter.
+
 ### Security posture and Use cases
 
-KanaShift is neither “weak obfuscation” nor “strong encryption”.
-It is best understood as **cryptographically hardened obfuscation**: it uses real cryptographic primitives to make reversal expensive, while intentionally preserving text structure and usability.
-
-With a strong 16-character password, guessing becomes extremely impractical, but the design does not provide the guarantees of modern authenticated encryption (AEAD) and is not intended as a drop-in replacement for it.
+KanaShift uses real cryptographic primitives to make reversal expensive, while intentionally preserving text structure and usability. With a strong 16-character password, guessing becomes extremely impractical.
 
 KanaShift is designed for reversible masking of human-readable text in UIs, logs, demos, and identifiers, where stable tokenization, copy/paste friendliness, and visually plausible output matter.
 The PBKDF2 500K setting increases the cost of password guessing, but does not turn the output into conventional ciphertext.
