@@ -6,8 +6,10 @@
 
 ## Overview
 
-KanaShift is a password-based, reversible text transformation scheme for Latin and Japanese text that preserves length, spacing, punctuation, and token boundaries.  
-It can be understood as a **stream-based, password-derived variant of format-preserving encryption (FPE)**, optimized for structured text and short tokens rather than free-form natural language.
+KanaShift is a password-based, reversible text transformation scheme for Latin and Japanese text that preserves length, spacing, punctuation, and token boundaries.
+Conceptually, it operates as a character-by-character, password-derived, format-preserving transformation.
+
+It can be understood as a stream-based, password-derived variant of format-preserving encryption (FPE), optimized for structured text and short tokens rather than free-form natural language.
 
 Like its sibling **PhonoShift (ROT500K)**, also included in this repository, KanaShift is intentionally hardened using cryptographic primitives to make reversal without the correct password computationally costly, while remaining deterministic and fully reversible with the secret.
 
