@@ -65,6 +65,15 @@ nor does it aim to provide semantic security for natural language.
 It is designed for reversible masking of structured text where format preservation,
 visual disguise, and password-based recovery matter.
 
+## Performance and Tuning
+
+KanaShift derives its keystream using PBKDF2 to impose a configurable cost per password guess.
+The default iteration count (500,000) is chosen for short strings and interactive use.
+
+For longer-form text or batch processing, the iteration count can be tuned down substantially,
+trading brute-force resistance for throughput while preserving full reversibility
+and format stability.
+
 ### Security posture and Use cases
 
 KanaShift uses real cryptographic primitives to make reversal expensive, while intentionally preserving text structure and usability. With a strong 16-character password, guessing becomes extremely impractical.
