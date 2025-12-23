@@ -15,7 +15,7 @@ KanaShift and its sibling **PhonoShift (ROT500K)** operate as character-by-chara
 
 Internally, ROT500K derives its keystream using **PBKDF2-HMAC-SHA256 with 500,000 iterations**, deliberately making each password-guess attempt computationally expensive. Reversal without the correct password is therefore non-trivial, unlike classic substitution ciphers such as ROT13.
 
-Modern versions introduce a **per-message nonce** to prevent keystream reuse when the same password is used across multiple messages. Because this nonce must be stored alongside the transformed text, the scheme is **not strict format-preserving encryption (FPE)** in the cryptographic sense: the full ciphertext is longer than the plaintext. The transformed payload itself remains class-preserving and structure-aware.
+Version 2 introduces a **per-message nonce** to prevent keystream reuse when the same password is used across multiple messages. Because this nonce must be stored alongside the transformed text, the scheme is **not strict format-preserving encryption (FPE)** in the cryptographic sense: the full ciphertext is longer than the plaintext. The transformed payload itself remains class-preserving and structure-aware.
 
 KanaShift applies the same core mechanics as PhonoShift with a different visual skin, rendering transformed text using Japanese writing systems (hiragana, katakana, and optionally kanji-like ranges). The result is text that looks Japanese while remaining fully reversible with the correct parameters.
 
