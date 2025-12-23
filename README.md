@@ -2,30 +2,29 @@
 
 # KanaShift & PhonoShift
 
-**Password-derived, format-preserving text transformation with a Japanese visual skin. Looks Japanese, translates to something else, decodes back to the truth.**
+**Password-derived, reversible text obfuscation with a Japanese visual skin. Looks Japanese, translates to something else, decodes back to the truth.**
 
 ## Overview
 
-KanaShift is a password-based, reversible text transformation scheme for Latin and Japanese text that preserves length, spacing, punctuation, and token boundaries.
-Conceptually, it operates as a character-by-character, password-derived, format-preserving transformation.
+KanaShift is a password-based, reversible text transformation scheme for Latin and Japanese text, designed for **human-readable obfuscation of structured strings**.  
+It preserves token boundaries, spacing, punctuation roles, and character classes (e.g. digits remain digits, kana remains kana), while rendering output in a Japanese-looking form.
 
-It can be understood as a stream-based, password-derived variant of format-preserving encryption (FPE), optimized for structured text and short tokens rather than free-form natural language.
+KanaShift and its sibling **PhonoShift (ROT500K)** operate as character-by-character, password-derived polyalphabetic transforms driven by a cryptographic keystream. The design is optimized for **short, structured text** — such as identifiers, access codes, logs, and UI strings—rather than free-form natural language.
 
-Like its sibling **PhonoShift (ROT500K)**, also included in this repository, KanaShift is intentionally hardened using cryptographic primitives to make reversal without the correct password computationally costly, while remaining deterministic and fully reversible with the secret.
+## Design Notes
 
-Internally, ROT500K derives a keystream using **PBKDF2-HMAC-SHA256 with 500,000 iterations** (“500K”), deliberately slowing each password-guess attempt. Unlike ROT13, which can be reversed instantly by anyone, reversal here requires guessing the correct password and paying the full key-derivation cost.
+Internally, ROT500K derives its keystream using **PBKDF2-HMAC-SHA256 with 500,000 iterations**, deliberately making each password-guess attempt computationally expensive. Reversal without the correct password is therefore non-trivial, unlike classic substitution ciphers such as ROT13.
 
-The name “ROT500K” is a deliberate nod to ROT13—partly as a joke and partly to underline the contrast:
-this is **not** ROT13 repeated many times, but a keyed design where reversal without the secret is no longer trivial.
+Modern versions introduce a **per-message nonce** to prevent keystream reuse when the same password is used across multiple messages. Because this nonce must be stored alongside the transformed text, the scheme is **not strict format-preserving encryption (FPE)** in the cryptographic sense: the full ciphertext is longer than the plaintext. The transformed payload itself remains class-preserving and structure-aware.
 
-KanaShift applies the same mechanics with a different visual skin, rendering text using Japanese writing systems (kana and kanji) instead of Latin letters. The design works best for **access codes, identifiers, logs, UI strings, and other structured text**, and is not intended to provide semantic security for arbitrary free-form prose.
+KanaShift applies the same core mechanics as PhonoShift with a different visual skin, rendering transformed text using Japanese writing systems (hiragana, katakana, and optionally kanji-like ranges). The result is text that looks Japanese while remaining fully reversible with the correct parameters.
 
-Initial implementations of PhonoShift and KanaShift are provided as:
+Initial implementations are provided as:
 - a standalone HTML/JavaScript reference implementation (`src/`)
 - a Python port with Gradio (`src-python/`)
 - a cross-platform Rust application
 
-The browser implementation serves as the reference design; other implementations aim to match it byte-for-byte.
+The browser implementation serves as the **reference design**; other implementations aim to match it behavior-for-behavior.
 
 ## Live Demos
 
@@ -87,46 +86,42 @@ Thanks to **Sea-Cardiologist-954** for identifying a critical weakness in v1. KA
 
 ## What This Is (and Is Not)
 
-KanaShift is not a replacement for authenticated encryption (e.g., AES-GCM),
-nor does it aim to provide semantic security for natural language.
+KanaShift is **not** a replacement for authenticated encryption (such as AES-GCM), and it does not aim to provide semantic security for free-form natural language.
 
-It is designed for reversible masking of structured text where format preservation,
-visual disguise, and password-based recovery matter.
+It is designed for **reversible masking of structured text**, where preserving visual form, character classes, and token boundaries matters, and where recovery is performed using a shared password. Typical use cases include identifiers, short messages, UI strings, logs, screenshots, and other human-visible text where conventional encryption would be awkward or visually obvious.
 
 ## Performance and Tuning
 
-KanaShift derives its keystream using PBKDF2 to impose a configurable cost per password guess.
-The default iteration count (500,000) is chosen for short strings and interactive use.
+KanaShift derives its keystream using PBKDF2 in order to impose a configurable computational cost on each password-guess attempt. The default iteration count (500,000) is chosen to balance interactive responsiveness with meaningful resistance to offline guessing for short strings.
 
-For longer-form text or batch processing, the iteration count can be tuned down substantially,
-trading brute-force resistance for throughput while preserving full reversibility
-and format stability.
+The default **500,000 PBKDF2 iterations** were calibrated on a macOS Mac mini (M4 Pro),
+resulting in roughly **~200 ms per encode/decode** in a browser environment.
+This targets a *“slow but usable”* interactive cost, comparable in wall-clock time
+to common bcrypt deployments (e.g. cost factor ~12), without claiming equivalent
+security guarantees.
 
-### Security posture and Use cases
+For longer text, bulk processing, or low-risk scenarios, the iteration count can be reduced substantially. This trades brute-force resistance for throughput while preserving full reversibility and the scheme’s structure-preserving behavior.
 
-KanaShift uses real cryptographic primitives to make reversal expensive, while intentionally preserving text structure and usability. With a strong 16-character password, guessing becomes extremely impractical.
+### Security Posture and Use Cases
 
-KanaShift is designed for reversible masking of human-readable text in UIs, logs, demos, and identifiers, where stable tokenization, copy/paste friendliness, and visually plausible output matter.
-The PBKDF2 500K setting increases the cost of password guessing, but does not turn the output into conventional ciphertext.
+KanaShift uses standard cryptographic primitives (PBKDF2-HMAC-SHA256, domain separation, and per-message nonces) to make unauthorized reversal **computationally expensive**, while intentionally preserving text structure and usability. With a strong password, large-scale guessing becomes impractical due to the enforced key-derivation cost.
 
-As an open-source project, its strength comes from scrutiny rather than secrecy; any weaknesses are expected to surface through review rather than obscurity.
+It is designed for **reversible masking of structured, human-readable text** in UIs, logs, demos, identifiers, and test data—where stable tokenization, copy/paste friendliness, and visually plausible output matter more than producing opaque ciphertext.
 
-### Calibration
+Version 2 of KanaShift includes a **per-message nonce**, preventing keystream reuse across messages. The required header is itself **masked into kana**, so outputs remain visually uniform. As a result, KanaShift is no longer format-preserving in the strict cryptographic sense, but preserves format at the payload level.
 
-The default 500,000-iteration setting was calibrated on a macOS Mac mini (M4 Pro),
-where it produces an encode/decode time of about 200 ms in a browser environment.
-This targets a “slow but usable” cost comparable in wall-clock time to common bcrypt
-deployments (for example, cost factor 12), without claiming the same security properties.
+KanaShift does not aim to replace authenticated encryption or provide semantic security for natural language. Its security model is explicit and reviewable, and as an open-source project it relies on scrutiny rather than obscurity.
 
 ---
 
 ## Shared Core
 
 - Keyed and reversible (`password + salt + iterations`)
-- Format-preserving (keeps `space`, `-`, `'`)
-- Class-preserving rotation (no cross-class mapping, no zero-shifts)
-- PBKDF2-HMAC-SHA256 keystream
-- Optional verification (decode can return OK / FAILED)
+- Payload-level format preservation (keeps `space`, `-`, `'`)
+- Class-preserving rotations (no cross-class mapping, no zero-shifts)
+- PBKDF2-HMAC-SHA256–derived keystream
+- Per-message nonce to prevent keystream reuse (masked header)
+- Optional verification variants (decode can return **OK / FAILED**)
 
 ---
 
